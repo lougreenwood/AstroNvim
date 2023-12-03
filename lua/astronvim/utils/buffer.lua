@@ -20,12 +20,12 @@ M.current_buf, M.last_buf = nil, nil
 M.sessions = {
   autosave = {
     last = true, -- auto save last session
-    cwd = true, -- auto save session for each working directory
+    cwd = true,  -- auto save session for each working directory
   },
   ignore = {
-    dirs = {}, -- working directories to ignore sessions in
+    dirs = {},                                -- working directories to ignore sessions in
     filetypes = { "gitcommit", "gitrebase" }, -- filetypes to ignore sessions
-    buftypes = {}, -- buffer types to ignore sessions
+    buftypes = {},                            -- buffer types to ignore sessions
   },
 }
 
@@ -52,8 +52,8 @@ function M.is_restorable(bufnr)
   end
 
   if
-    vim.tbl_contains(M.sessions.ignore.filetypes, vim.api.nvim_get_option_value("filetype", { buf = bufnr }))
-    or vim.tbl_contains(M.sessions.ignore.buftypes, vim.api.nvim_get_option_value("buftype", { buf = bufnr }))
+      vim.tbl_contains(M.sessions.ignore.filetypes, vim.api.nvim_get_option_value("filetype", { buf = bufnr }))
+      or vim.tbl_contains(M.sessions.ignore.buftypes, vim.api.nvim_get_option_value("buftype", { buf = bufnr }))
   then
     return false
   end
@@ -76,18 +76,18 @@ end
 --- Move the current buffer tab n places in the bufferline
 ---@param n number The number of tabs to move the current buffer over by (positive = right, negative = left)
 function M.move(n)
-  if n == 0 then return end -- if n = 0 then no shifts are needed
-  local bufs = vim.t.bufs -- make temp variable
-  for i, bufnr in ipairs(bufs) do -- loop to find current buffer
+  if n == 0 then return end                         -- if n = 0 then no shifts are needed
+  local bufs = vim.t.bufs                           -- make temp variable
+  for i, bufnr in ipairs(bufs) do                   -- loop to find current buffer
     if bufnr == vim.api.nvim_get_current_buf() then -- found index of current buffer
-      for _ = 0, (n % #bufs) - 1 do -- calculate number of right shifts
-        local new_i = i + 1 -- get next i
-        if i == #bufs then -- if at end, cycle to beginning
-          new_i = 1 -- next i is actually 1 if at the end
-          local val = bufs[i] -- save value
-          table.remove(bufs, i) -- remove from end
-          table.insert(bufs, new_i, val) -- insert at beginning
-        else -- if not at the end,then just do an in place swap
+      for _ = 0, (n % #bufs) - 1 do                 -- calculate number of right shifts
+        local new_i = i + 1                         -- get next i
+        if i == #bufs then                          -- if at end, cycle to beginning
+          new_i = 1                                 -- next i is actually 1 if at the end
+          local val = bufs[i]                       -- save value
+          table.remove(bufs, i)                     -- remove from end
+          table.insert(bufs, new_i, val)            -- insert at beginning
+        else                                        -- if not at the end,then just do an in place swap
           bufs[i], bufs[new_i] = bufs[new_i], bufs[i]
         end
         i = new_i -- iterate i to next value
@@ -95,7 +95,7 @@ function M.move(n)
       break
     end
   end
-  vim.t.bufs = bufs -- set buffers
+  vim.t.bufs = bufs       -- set buffers
   utils.event "BufsUpdated"
   vim.cmd.redrawtabline() -- redraw tabline
 end
@@ -211,20 +211,14 @@ function M.sort(compare_func, skip_autocmd)
   return false
 end
 
---- Close the current tab
+--- Close a given tab
+---@param tabpage? integer The tabpage to close or the current tab if not provided
 function M.close_tab(tabpage)
   if #vim.api.nvim_list_tabpages() > 1 then
-    if tabpage then
-      vim.t[tabpage].bufs = nil
-    else
-      vim.t.bufs = nil
-    end
+    tabpage = tabpage or vim.api.nvim_get_current_tabpage()
+    vim.t[tabpage].bufs = nil
     utils.event "BufsUpdated"
-    if tabpage then
-      vim.cmd.tabclose(vim.api.nvim_tabpage_get_number(tabpage))
-    else
-      vim.cmd.tabclose()
-    end
+    vim.cmd.tabclose(vim.api.nvim_tabpage_get_number(tabpage))
   end
 end
 
@@ -235,7 +229,7 @@ local fnamemodify = vim.fn.fnamemodify
 local function bufinfo(bufnr) return vim.fn.getbufinfo(bufnr)[1] end
 local function unique_path(bufnr)
   return require("astronvim.utils.status.provider").unique_path() { bufnr = bufnr }
-    .. fnamemodify(bufinfo(bufnr).name, ":t")
+      .. fnamemodify(bufinfo(bufnr).name, ":t")
 end
 
 --- Comparator of two buffer numbers
